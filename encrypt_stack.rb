@@ -1,10 +1,8 @@
 #!/usr/bin/env ruby
 
-#
 # Stack Plist Encrypter Version 0.1
-# All credits to Isaiah
 # Fork of https://github.com/yourhead/s3
-#
+# All credits to Isaiah
 
 STDERR.puts "**************************************************"
 STDERR.puts "* Stack Plist Encrypter Version 0.1              *"
@@ -48,53 +46,58 @@ end
 
 # iterate over all Info.plist files recursively
 Dir.glob("#{filePath}/**/Info.plist").each {
-    |file| STDERR.puts "Processing " + file
-	# File.delete(file) if File.file? file
+    |file| 
+    STDERR.puts "Process " + file
 
-    # Read the data file
-    data = File.read (file)
-    if (!data)
-        STDERR.puts "Could not read data file " + file
+    # parse existing Info.plist file
+    oldPlist = Plist.parse_xml(file)
+
+    # create new empty plist for storing attributes to be encrypted
+    # for now, search for attributes 'SUFeedURL', 'customItems' for encryption
+    newPlist = {}
+    attributes = ['SUFeedURL', 'customItems']
+    attributes.each {
+        |attribute|
+        if !!oldPlist[attribute]
+            newPlist[attribute] = oldPlist[attribute]
+            oldPlist.delete(attribute)
+        end
+    }
+
+    # only encrypt if new plist is filled with attributes
+    if !newPlist.empty?
+        # Generate a random password and hash it
+        # Generate for every plist new for higher security
+        password = OpenSSL::Random.pseudo_bytes(64)
+        md5 = OpenSSL::Digest::MD5.new
+        symetricKey = md5.digest (password)
+        if (!password)
+            abort("Could create a symetric key")
+        end
+
+        # encrypt the data using a simple fast RC 4 cipher
+        cipher = OpenSSL::Cipher.new('RC4')
+        cipher.key = symetricKey
+        dataEncrypted = cipher.update (newPlist.to_plist)
+        if (!dataEncrypted)
+            abort("Symetric encryption failed")
+        end
+
+        # use the stacks public key to encrypt the password
+        passwordEncrypted = publicKey.public_encrypt (password)
+        if (!passwordEncrypted)
+            abort("Public-key encryption failed")
+        end
+
+        # write the results to the old plist in attribute 'stackData', using strict base64 (no newlines!)
+        oldPlist['stackData'] = (Base64.strict_encode64 (passwordEncrypted)) + (Base64.strict_encode64 (dataEncrypted))
+
+        # Write old plist to file
+        File.write(file, oldPlist.to_plist)
+
+        STDERR.puts "Encrypt " + file
+    else
+        STDERR.puts "Skipped " + file
     end
-
-    doc = Nokogiri::XML(data)
-
-    # STDERR.puts data.index("dict")
-
-    # Generate a random password and hash it
-    password = OpenSSL::Random.pseudo_bytes(64)
-    md5 = OpenSSL::Digest::MD5.new
-    symetricKey = md5.digest (password)
-    if (!password)
-        abort("Could create a symetric key")
-    end
-
-    # encrypt the data using a simple fast RC 4 cipher
-    cipher = OpenSSL::Cipher.new('RC4')
-    cipher.key = symetricKey
-    dataEncrypted = cipher.update (data)
-    if (!dataEncrypted)
-        abort("Symetric encryption failed")
-    end
-
-    # use the stacks public key to encrypt the password
-    passwordEncrypted = publicKey.public_encrypt (password)
-    if (!passwordEncrypted)
-        abort("Public-key encryption failed")
-    end
-
-    # write the results to standard out, using strict base64 (no newlines!)
-    # puts (Base64.strict_encode64 (passwordEncrypted)) + (Base64.strict_encode64 (dataEncrypted))
 
 }
-
-
-
-
-
-
-
-
-
-
-
