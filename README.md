@@ -1,3 +1,19 @@
+# Stack Plist Encrypter
+
+Script for mass encryption of plist data in stack packages.
+
+## Requirements
+
+- Ruby (already on your Mac)
+- https://github.com/patsplat/plist extension (install via `sudo gem install plist -v 3.2.0`)
+
+## Usage
+
+**Caution: This script will change the data in the given stacks package. Only operate after created a backup, or inside a build script.**
+
+1. The script will recursively encrypt all Info.plist files on the fly. No need to create a separate plist for your private info. By default, the attributes `SUFeedURL` and `customItems` will be encrypted. You are able to extend these attributes inside the script. The encrypted data will replace the values in your normal plist.
+2. Encrypt the plist using the ruby script `ruby encrypt_stack.rb stack_package.stack`
+
 ## Encrypted P-List Data
 
 Stacks 3.5 will check each stack plist for an encrypted data block.  This encrypted block will be decrypted and the data merged into the plist. This provides a way of hiding sensitive data from users and competitors.  You can, for instance, place the URL for your update server, and your Update Info into the encrypted data.
@@ -13,27 +29,6 @@ The goal is to provide a lightweight mechanism to protect sensitive data. The si
 ### How it works
 
 The developer uses the Stacks public key to encrypt a plist file. The encrypted data is added to the stack. When Stacks 3 loads the stack into the Stacks Library it will decrypt the information and incorporate it into the stack.
-
-### Ruby script
-
-A ruby script is provided to encrypt data. Use Terminal.app to run the script providing a Plist file.
-
-#### How to use the script
-
- 1. Create a separate plist for your private info.
-This plist can contain anything you like. The data in the private plist will override the values in your normal plist.
- 2. Encrypt the plist using the ruby script
-`% encrypt_plist.rb Private_Plist.plist > encrypted.dat`
- 3. Open the resulting file with a text editor
- 4. Cmd-A then Cmd-C to Copy all of the data.
- 5. Open our regular Info.plist
- 6. Create a new item with key: `stackData` type: `String` value: paste in the encrypted data
-
-
-
-
-
-
 
 ### Important details
 
