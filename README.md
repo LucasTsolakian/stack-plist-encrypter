@@ -1,20 +1,36 @@
 # Stack Plist Encrypter
 
-Script for mass encryption of plist data in stack packages.
+Script for mass encryption of plist data in stack packages, without the need to create a separate plist for your private info.
+
+**Caution: This script will change the data in the given stacks package.**
+
+1. It is strongly recommended you are using GIT version control for you stacks in order not to lose data. Use this script only after created a backup.
+
+2. The script will recursively encrypt all Info.plist files on the fly. By default, the attributes `SUFeedURL` and `customItems` will be encrypted. You are able to extend these attributes inside the script.
+
+3. The encrypted data will replace the values in your normal plist inside a new attribute `stackData`. In addition, all attributes are sorted.
 
 ## Requirements
 
-- Ruby (already on your Mac)
+- Ruby (already installed on macOS)
 - https://github.com/patsplat/plist extension (install via `sudo gem install plist -v 3.2.0`)
 
 ## Usage
 
-**Caution: This script will change the data in the given stacks package. Only operate after created a backup, or inside a build script.**
+Encrypt the plist using the ruby script `ruby encrypt_stack.rb stack_package.stack`
 
-1. The script will recursively encrypt all Info.plist files on the fly. No need to create a separate plist for your private info. By default, the attributes `SUFeedURL` and `customItems` will be encrypted. You are able to extend these attributes inside the script. The encrypted data will replace the values in your normal plist.
-2. Encrypt the plist using the ruby script `ruby encrypt_stack.rb stack_package.stack`
+(For just sorting all attributes inside the plist, use `ruby sort_stack.rb stack_package.stack`)
 
-## Encrypted P-List Data
+## Known Issues
+
+There might be a warning comming up which can be ignored:
+
+`/Library/Ruby/Gems/2.6.0/gems/plist-3.2.0/lib/plist/generator.rb:97: warning: constant ::Fixnum is deprecated`
+`/Library/Ruby/Gems/2.6.0/gems/plist-3.2.0/lib/plist/generator.rb:97: warning: constant ::Bignum is deprecated`
+
+## Bacckground Information
+
+### Encrypted P-List Data
 
 Stacks 3.5 will check each stack plist for an encrypted data block.  This encrypted block will be decrypted and the data merged into the plist. This provides a way of hiding sensitive data from users and competitors.  You can, for instance, place the URL for your update server, and your Update Info into the encrypted data.
 
