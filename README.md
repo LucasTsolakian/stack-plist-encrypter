@@ -2,13 +2,15 @@
 
 Script for mass encryption of plist data in stack packages, without the need to create a separate plist for your private info.
 
-**Caution: This script will change the data in the given stacks package.**
+**1. Caution: This script will change the data in the referenced stacks package and overwrite the plist data in your referenced stack. It is strongly recommended you are using GIT version control for you stacks in order not to lose data. Use this script only after created a backup.**
 
-1. It is strongly recommended you are using GIT version control for you stacks in order not to lose data. Use this script only after created a backup.
+2. The script will recursively encrypt all Info.plist files on the fly. By default, the attributes `SUFeedURL` and `customItems` will be encrypted. You are able to extend these attributes inside the script. Sticking with these 2 attributes will allow the Stacks plugin to lazy load the encrypted data and improve performence. Encrypting additional attributes like version numbers, titles, hidden/deprecation flags will slow down loading of the stack into the library.
 
-2. The script will recursively encrypt all Info.plist files on the fly. By default, the attributes `SUFeedURL` and `customItems` will be encrypted. You are able to extend these attributes inside the script.
+3. The encrypted data will replace the values in your normal plist inside a new attribute `stackData`. In addition, all attributes are sorted to plist best practices.
 
-3. The encrypted data will replace the values in your normal plist inside a new attribute `stackData`. In addition, all attributes are sorted.
+4. Best to use the script right before creating the appcast.xml. In addition, test if the stack still loads correctly.
+
+5. Using the script on an already encrypted stack will not affect the plist again.
 
 ## Requirements
 
@@ -19,16 +21,14 @@ Script for mass encryption of plist data in stack packages, without the need to 
 
 Encrypt the plist using the ruby script `ruby encrypt_stack.rb stack_package.stack`
 
-(For just sorting all attributes inside the plist, use `ruby sort_stack.rb stack_package.stack`)
-
 ## Known Issues
 
 There might be a warning comming up which can be ignored:
 
-`/Library/Ruby/Gems/2.6.0/gems/plist-3.2.0/lib/plist/generator.rb:97: warning: constant ::Fixnum is deprecated`
-`/Library/Ruby/Gems/2.6.0/gems/plist-3.2.0/lib/plist/generator.rb:97: warning: constant ::Bignum is deprecated`
+- `/Library/Ruby/Gems/2.6.0/gems/plist-3.2.0/lib/plist/generator.rb:97: warning: constant ::Fixnum is deprecated`
+- `/Library/Ruby/Gems/2.6.0/gems/plist-3.2.0/lib/plist/generator.rb:97: warning: constant ::Bignum is deprecated`
 
-## Bacckground Information
+## Background Information
 
 ### Encrypted P-List Data
 
